@@ -1,1 +1,2 @@
-# snake.js-server
+# Snake.js (server)
+Multiplayer snake game
