@@ -2,7 +2,7 @@ var HTTP = require("http");
 var WS = require("ws");
 
 var config = {redirectUrl: "", allowedOrigins: ["null"]};
-var snake = {welcome: "Welcome", speed: 100, timer: null, chunkBits: 4, chunks: [], clients: []};
+var snake = {welcome: "Welcome", speed: 400, timer: null, chunkBits: 4, chunks: [], clients: []};
 snake.chunkSize = 1 << snake.chunkBits;
 snake.chunkMask = snake.chunkSize - 1;
 
@@ -16,7 +16,16 @@ snake.transmitChunk = function(chunk)
 		message = JSON.stringify({x: chunk.x, y: chunk.y, s: chunk.changeStyles, u: chunk.changes});
 		for (var i = 0; i < chunk.clients.length; i++)
 		{
-			chunk.clients[i].socket.send(message);
+			try
+			{
+				chunk.clients[i].socket.send(message);
+			}
+			catch (ex)
+			{
+				//Remove failed client...
+				chunk.clients.splice(i, 1);
+				i--;
+			}
 		}
 		chunk.changeStyles = [];
 		chunk.changes = [];
@@ -51,8 +60,15 @@ snake.transmitChunk = function(chunk)
 		message = JSON.stringify({x: chunk.x, y: chunk.y, s: styles, g: grid});
 		for (var i = 0; i < chunk.newClients.length; i++)
 		{
-			chunk.newClients[i].socket.send(message);
-			chunk.clients.push(chunk.newClients[i]);
+			try
+			{
+				chunk.newClients[i].socket.send(message);
+				chunk.clients.push(chunk.newClients[i]);
+			}
+			catch (ex)
+			{
+				//Forget failed client...
+			}
 		}
 		chunk.newClients = [];
 	}
@@ -221,7 +237,14 @@ wsServer.on("connection", function(ws)
 						{
 							client.bad++;
 						}
-						ws.send(JSON.stringify({x: data.x, y: data.y}));
+						try
+						{
+							ws.send(JSON.stringify({x: data.x, y: data.y}));
+						}
+						catch (ex)
+						{
+							//Ignore for now, not sure what should happen...
+						}
 					}
 				}
 				else
@@ -235,10 +258,19 @@ wsServer.on("connection", function(ws)
 		console.log("Connection closed!");
 	});
 	//Send welcome message...
-	ws.send(JSON.stringify({w: snake.welcome, b: snake.chunkBits, i: snake.speed}));
-	ws.send(JSON.stringify({s: client.style}));
-	snake.clients.push(client);
+	try
+	{
+		ws.send(JSON.stringify({w: snake.welcome, b: snake.chunkBits, i: snake.speed}));
+		ws.send(JSON.stringify({a: -1, x: 0, y: 0, s: client.style}));
+		snake.clients.push(client);
+	}
+	catch (ex)
+	{
+		//Forget about connection...
+	}
 });
 
-server.listen(8080);
+var server_port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+var server_ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+server.listen(server_port, server_ip);
 snake.timer = setInterval(snake.tick, snake.speed);
