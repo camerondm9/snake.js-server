@@ -1,7 +1,7 @@
 var HTTP = require("http");
 var WS = require("ws");
 
-var config = {redirectUrl: "", allowedOrigins: ["null"]};
+var config = {redirectUrl: "http://camerondm9.github.io/snake/", allowedOrigins: ["null", "http://camerondm9.github.io", "https://camerondm9.github.io"]};
 var snake = {welcome: "Welcome", speed: 400, timer: null, chunkBits: 4, chunks: [], clients: []};
 snake.chunkSize = 1 << snake.chunkBits;
 snake.chunkMask = snake.chunkSize - 1;
