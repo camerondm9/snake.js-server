@@ -256,6 +256,17 @@ wsServer.on("connection", function(ws)
 	});
 	ws.on("close", function(code, message) {
 		console.log("Connection closed!");
+		//Remove from global client list...
+		for (var i = 0; i < snake.clients.length; i++)
+		{
+			if (snake.clients[i] == client)
+			{
+				snake.clients.splice(i, 1);
+				break;
+			}
+		}
+		//Don't worry about chunk subscriber lists... (client will fail and be removed)
+		
 	});
 	//Send welcome message...
 	try
