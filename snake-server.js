@@ -247,6 +247,10 @@ wsServer.on("connection", function(ws)
 						}
 					}
 				}
+				else if (data.hasOwnProperty("l"))
+				{
+					client.tailLength += data.l;
+				}
 				else
 				{
 					console.log(message);
