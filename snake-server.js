@@ -41,7 +41,7 @@ snake.transmitChunk = function(chunk)
 			for (var j = 0; j < snake.chunkSize; j++)
 			{
 				var index = -1;
-				for (var k = 0; k < snake.chunkSize; k++)
+				for (var k = 0; k < styles.length; k++)
 				{
 					if (styles[k] == chunk.grid[i][j])
 					{
@@ -54,7 +54,7 @@ snake.transmitChunk = function(chunk)
 					index = styles.length;
 					styles.push(chunk.grid[i][j]);
 				}
-				chunk.grid[i][j] = index;
+				grid[i][j] = index;
 			}
 		}
 		message = JSON.stringify({x: chunk.x, y: chunk.y, s: styles, g: grid});
