@@ -116,7 +116,7 @@ snake.addChunk = function(x, y)
 snake.transmitActor = function(actor)
 {
 	actor = (actor || this);
-	var message = JSON.stringify({a: actor.id, x: actor.x, y: actor.y, s: actor.style, p: actor.path});
+	var message = JSON.stringify(actor.remove ? {a: actor.id} : {a: actor.id, x: actor.x, y: actor.y, s: actor.style, p: actor.path});
 	for (var i = 0; i < snake.clients.length; i++)
 	{
 		if (actor != snake.clients[i])
@@ -259,6 +259,11 @@ snake.tick = function()
 	for (var i = 0; i < snake.actors.length; i++)
 	{
 		snake.actors[i].transmit();
+		if (snake.actors[i].remove)
+		{
+			snake.actors.splice(i, 1);
+			i--;
+		}
 	}
 	//Collect old chunks...
 	
@@ -544,6 +549,9 @@ wsServer.on("connection", function(ws)
 				break;
 			}
 		}
+		//Request that actors be removed...
+		client.remove = true;
+		client.tail.remove = true;
 		//Don't worry about chunk subscriber lists... (client will fail and be removed)
 		
 	});
